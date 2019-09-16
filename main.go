@@ -3,11 +3,10 @@ package main
 import (
 	"github.com/ha666/golibs"
 	"github.com/ha666/logs"
-	"github.com/ha666/training/addSub"
+	"github.com/ha666/training/grade2/addSub"
 	"github.com/ha666/training/initial"
 	_ "github.com/ha666/training/initial"
 	"runtime"
-	"time"
 )
 
 const VERSION = "2019.906.1713"
@@ -42,6 +41,5 @@ func init() {
 }
 
 func main() {
-	defer time.Sleep(1e9)
 	addSub.Do()
 }
