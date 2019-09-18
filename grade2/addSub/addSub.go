@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/ha666/golibs"
 	"github.com/ha666/golibs/util/grand"
+	"github.com/ha666/logs"
 	"github.com/signintech/gopdf"
+	"os"
 	"os/user"
 	"runtime"
-
-	"github.com/ha666/logs"
+	"time"
 )
 
 var (
@@ -43,7 +44,7 @@ func initFont() {
 			fontName = "微软雅黑"
 			user, err := user.Current()
 			if nil != err {
-				logs.Error("查询当前目录出错:%s", err.Error())
+				logs.Emergency("查询当前目录出错:%s", err.Error())
 				return
 			}
 			fontPath = user.HomeDir + "/Library/Fonts/MSYH.TTF"
@@ -51,6 +52,7 @@ func initFont() {
 	default:
 		{
 			logs.Emergency("【initFont】未知系统:%s", os_name)
+			return
 		}
 	}
 	//endregion
@@ -58,9 +60,11 @@ func initFont() {
 	//region 验证字体信息
 	if golibs.Length(fontName) <= 0 {
 		logs.Emergency("【initFont】字体名称未找到")
+		return
 	}
 	if golibs.Length(fontPath) <= 0 {
 		logs.Emergency("【initFont】字体路径未找到")
+		return
 	}
 	//endregion
 
@@ -81,7 +85,7 @@ func genFormulas() {
 	pdf.AddPage()
 	err := pdf.AddTTFFont(fontName, fontPath)
 	if err != nil {
-		logs.Error("添加字体出错:%s", err.Error())
+		logs.Emergency("添加字体出错:%s", err.Error())
 		return
 	}
 	//endregion
@@ -98,7 +102,7 @@ func genFormulas() {
 		pdf.Line(585, topMargin, 585, topMargin+float64(rows*rowHeigh))
 		err = pdf.SetFont(fontName, "", 14)
 		if err != nil {
-			logs.Error("设置字体出错:%s", err.Error())
+			logs.Emergency("设置字体出错:%s", err.Error())
 			return
 		}
 	}
@@ -113,7 +117,7 @@ func genFormulas() {
 		pdf.SetY(15)
 		err = pdf.Cell(nil, text01)
 		if err != nil {
-			logs.Error("写文本出错:%s", err.Error())
+			logs.Emergency("写文本出错:%s", err.Error())
 			return
 		}
 	}
@@ -121,18 +125,21 @@ func genFormulas() {
 
 	//region 写内容
 	{
+		count := 2 * rows
 		for i := 0; i < 2; i++ {
 			for j := 0; j < rows; j++ {
+				fmt.Fprintf(os.Stdout, "开始生成:【%d/%d】行 \r", i*rows+j+1, count)
+				time.Sleep(time.Millisecond * 100)
 				formula, err := genFormula()
 				if err != nil {
-					logs.Error("生成算式没有成功:%s", err.Error())
+					logs.Emergency("生成算式没有成功:%s", err.Error())
 					return
 				}
 				pdf.SetX(float64(i)*585/2 + leftMargin*2)
 				pdf.SetY(topMargin + float64(j*rowHeigh) + 10)
 				err = pdf.Cell(nil, formula)
 				if err != nil {
-					logs.Error("写文本出错:%s", err.Error())
+					logs.Emergency("写文本出错:%s", err.Error())
 					return
 				}
 			}
@@ -144,7 +151,7 @@ func genFormulas() {
 	{
 		err = pdf.WritePdf("hello.pdf")
 		if err != nil {
-			logs.Error("生成pdf出错:%s", err.Error())
+			logs.Emergency("生成pdf出错:%s", err.Error())
 			return
 		}
 		logs.Info("生成成功")
